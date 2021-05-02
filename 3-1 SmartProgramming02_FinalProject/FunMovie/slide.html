@@ -1,0 +1,411 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+
+	<!-- 제이쿼리모바일, 제이쿼리, 폰갭 라이브러리 파일(다운로드 방식)  -->  
+<link rel="stylesheet" href="jquery.mobile/jquery.mobile-1.4.5.min.css"/>
+<script src="jquery.mobile/jquery-1.11.1.min.js"></script>
+<script src="jquery.mobile/jquery.mobile-1.4.5.min.js"></script>
+<script src="cordova.js"></script>
+
+	<!-- 구글맵 API 라이브러리 파일(CDN 방식)  -->
+<script src="http://maps.google.com/maps/api/js?sensor=true&language=ko"></script>  
+
+	<!-- jquery-ui-map 플러그인 라이브러리 파일(다운로드 방식)  -->
+<script src="ui/min/jquery.ui.map.full.min.js"></script>  
+<script src="ui/jquery.ui.map.extensions.js"></script>	 
+
+	<!-- 사용자 정의 자바스크립트 파일  -->
+<script src="dbHandle.js"></script>	
+<script src="photoHandle.js"></script>	
+<script src="cafeDisplay.js"></script>
+	
+<script> 	
+	// 전역변수
+	var db = null;     		// DB 객체
+	var varCafeName;   		// 현재 맛집 이름
+	var recordSet = null; 	// 현재 레코드셋
+	var varPosition = null; // 현재 레코드		
+	var flag;  					// 입력/수정 페이지 식별
+	
+	$(document).ready(function() {
+	// 폰갭 API 초기화
+		initPhoneGap();
+
+ 	// DB, Table 열기			
+	    openDB();  
+	    createTable();  
+ 						
+ 	// 이벤트 함수 정의	      		
+		$('#btnAdd').click(function() {
+			insertCafe(); 
+		});		
+	   $('#btnAddCancel').click( function(){
+			$('#cafeType2').val('미정').attr('selected', 'selected'); 
+			$('#cafeType2').selectmenu('refresh'); 
+			$('#cafeRegion2').val('미정').attr('selected', 'selected'); 
+			$('#cafeRegion2').selectmenu('refresh');
+			$('#cafeScore2').val('0').slider('refresh'); 
+			form2.reset();     		
+	   });	    
+	   $('#btnModifySearch').click( function(){
+			var name = $('#sCafeName2').val();
+			selectCafeModify(name);
+	   });
+	   $('#btnUpdate').click( function(){  	
+			updateCafe();	
+		}); 
+	   $('#btnDelete').click( function(){  	
+			deleteCafe();
+	   }); 	    	      
+	   $('#btnModifyCancel').click( function(){
+			$('#cafeType2').val('미정').attr('selected', 'selected'); 
+			$('#cafeType2').selectmenu('refresh'); 
+			$('#cafeRegion2').val('미정').attr('selected', 'selected'); 
+			$('#cafeRegion2').selectmenu('refresh');
+			$('#cafeScore2').val('0').slider('refresh'); 
+			form2.reset();     				
+	   }); 	
+	   $('#btnCafeListSearch').click( function(){
+		   selectCafeList(); 
+	   });
+		$('#btnTakePic1').click( function(){
+			if ($('#cafePic1').val() == ''){
+ 				navigator.notification.alert('사진 이름을 먼저 입력하세요', null, '입력오류');	   			
+			} else {	   			
+				flag='enrol';
+		  		capturePhoto();
+			} 
+		});
+	   $('#btnTakePic2').click( function(){
+	   		if ($('#cafePic2').val() == ''){
+        		navigator.notification.alert('사진 이름을 먼저 입력하세요', null, '입력오류');	   			
+			} else {	   			
+		  		flag='modify';
+			   capturePhoto('change'); 
+	  	 	} 
+	   });	    
+	   $('#btnPicShow').click( function(){   
+ 			getCafePic(); 	    	   
+	   });	
+	   $('#btnMapShow').click( function(){   
+ 			getCafeAddressMap(); 	    	   
+	   });
+	   $('#btnRouteShow').click( function(){   
+ 			getCafeRouteMap(); 	    	   
+	   });
+	});	
+	
+   function initPhoneGap() {
+ 		document.addEventListener('deviceready', onDeviceReady, true);
+	}   
+   function onDeviceReady() {
+		navigator.notification.alert('장치 준비됨', null, '폰갭 API');
+	} 
+</script>
+<style type="text/css">
+	#logo { display: block; margin: 50px auto; }
+	.my_listview_img { padding:10px; }
+	#btnGroup { margin: 5px 5px; }
+	#picArea { width:100%; height: width*3/4; }
+	#mapArea, #routeArea { width:100%; height: 330px; }	
+</style>
+</script>
+  
+  
+  
+<title>영화 소개 앱</title>
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+
+<div data-role="page" id="movieEnrolPage">
+		<div data-role="header" class="header" style="width:100%">
+	<div>
+	<span class="a" align="center">
+	<a href="#main" style="margin-left:15px;color:black;">Fun Movie</a>
+	</span>
+		<a href="#panel2"><img src="img/list.png" align="right" width="30" height="30" class="b"></a>
+		<img src="img/search.png" align="right" width="30" height="30" class="b">
+		&nbsp;&nbsp;&nbsp;
+	</div>	
+    </div>
+	
+	
+
+	<div data-role="content" style="background-color:#AAAAAA;">
+		<form name="form1" style="background-color">  
+			<h3 class="c">명대사 등록</h3>
+			<div class="ui-body ui-body-a gap" style="background-color:#FFFFFF;">			
+				<label for="movieName1">영화 제목 </label>
+			 	<input type="text" name="movieName1" id="movieName1" data-mini="true"/>
+				<label for="movieType1" class="select">장르</label>
+				<select name="movieType1" id="movieType1" data-native-menu="false" data-mini="true" data-inline="true">
+					<option value="전체">전체</option>
+					<option value="로멘스/멜로">로멘스/멜로</option>
+					<option value="드라마">드라마</option>
+					<option value="액션">액션</option>
+					<option value="코미디">코미디</option>
+					<option value="다큐멘터리">다큐멘터리</option>
+					<option value="기타">기타</option>
+				</select>	 	
+				<label for="movieRegion1" class="select">나라</label>
+				<select name="movieRegion1" id="movieRegion1" data-native-menu="false" data-mini="true" data-inline="true">
+					<option value="전체">전체</option>
+					<option value="한국">한국</option>
+					<option value="미국">미국</option>
+					<option value="일본">일본</option>
+					<option value="중국">중국</option>
+					<option value="영귝">영국</option>
+					<option value="유럽">유럽</option>
+					<option value="기타">기타</option>
+					
+
+					
+					
+					
+				</select>		
+				<label for="movieScore1">평점</label>
+				<input type="range" name="movieScore1" id="movieScore1" min="0" max="10"/>
+	
+				<label for="movieMemo1">명대사</label>	
+				<textarea cols="25" rows="5" name="movieMemo1" id="movieMemo1" data-mini="true"></textarea>	
+								
+			</div>			
+			<div class="ui-body">
+				<fieldset class="ui-grid-a">
+					<div class="ui-block-a">
+	                    <input type="reset" id="btnAddCancel" value="취소"/>
+					</div>
+					<div class="ui-block-b">
+	                    <input type="button" id="btnAdd" value="추가"/>
+					</div>
+				</fieldset>
+			</div>				
+		</form> 
+	</div>
+
+	
+    <div data-role="footer" data-position="fixed">
+			<div data-role="navbar">
+			<ul>
+			<li><a href="#movieEnrolPage"  style="background-color:#C0C0C0;">명대사 등록</a></li>
+			<li><a href="#movieModifyPage"  style="background-color:#C0C0C0;">명대사 수정</a></li>
+			<li><a href="#movieSearchPage"  style="background-color:#C0C0C0;">명대사 조회</a></li>
+			</ul>
+		</div>
+    </div>
+</div>
+
+
+
+
+<div data-role="page" id="movieModifyPage">
+		<div data-role="header" class="header" style="width:100%">
+	<div>
+	<span class="a" align="center">
+	<a href="#main" style="margin-left:15px;color:black;">Fun Movie</a>
+	</span>
+		<a href="#panel2"><img src="img/list.png" align="right" width="30" height="30" class="b"></a>
+		<img src="img/search.png" align="right" width="30" height="30" class="b">
+		&nbsp;&nbsp;&nbsp;
+	</div>	
+    </div>
+	<div data-role="content" style="background-color:#AAAAAA;">
+		<form name="form2">  
+			<h3 class="c">입력한 명대사 수정</h3>
+			<div class="ui-body ui-body-a gap">		
+				<label for="sMovieName2">영화제목</label>
+			 	<input type="search" name="sMovieName2" id="sMovieName2" value="" data-mini="true" />
+				<label for="movieType2" class="select" >장르</label>
+				<select name="movieType2" id="movieType2" data-native-menu="false" data-mini="true" data-inline="true">
+					<option value="전체">전체</option>
+					<option value="로멘스/멜로">로멘스/멜로</option>
+					<option value="드라마">드라마</option>
+					<option value="액션">액션</option>
+					<option value="코미디">코미디</option>
+					<option value="다큐멘터리">다큐멘터리</option>
+					<option value="기타">기타</option>
+				</select>	 	
+				<label for="movieRegion2" class="select">나라</label>
+				<select name="movieRegion2" id="movieRegion2" data-native-menu="false" data-mini="true" data-inline="true">
+					<option value="전체">전체</option>
+					<option value="한국">한국</option>
+					<option value="미국">미국</option>
+					<option value="일본">일본</option>
+					<option value="중국">중국</option>
+					<option value="영국">영국</option>
+					<option value="유럽">유럽</option>
+					<option value="기타">기타</option>
+				</select>		
+				<label for="movieScore2">평점</label>
+				<input type="range" name="movieScore2" id="movieScore2" min="0" max="10"/>
+			 	
+				<label for="movieMemo2">명대사</label>	
+				<textarea cols="25" rows="5" name="movieMemo2" id="movieMemo2"  data-mini="true"></textarea>	
+				
+			</div><br/>	
+			<div data-role="controlgroup" data-type="horizontal">
+	             <input type="reset" id="btnModifyCancel" value="취소"/>
+		         <input type="button" id="btnUpdate" value="수정"/>		
+		         <input type="button" id="btnDelete" value="삭제"/>	
+	             <input type="button" id="btnModifySearch" value="검색"/>
+            </div>			
+		</form> 
+	</div>
+    <div data-role="footer" data-position="fixed">
+			<div data-role="navbar">
+			<ul>
+			<li><a href="#movieEnrolPage"  style="background-color:#C0C0C0;">명대사 등록</a></li>
+			<li><a href="#movieModifyPage"  style="background-color:#C0C0C0;">명대사 수정</a></li>
+			<li><a href="#movieSearchPage"  style="background-color:#C0C0C0;">명대사 조회</a></li>
+			</ul>
+		</div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+<div data-role="page" id="movieSearchPage">
+		<div data-role="header" class="header" style="width:100%">
+	<div>
+	<span class="a" align="center">
+	<a href="#main" style="margin-left:15px;color:black;">Fun Movie</a>
+	</span>
+		<a href="#panel2"><img src="img/list.png" align="right" width="30" height="30" class="b"></a>
+		<img src="img/search.png" align="right" width="30" height="30" class="b">
+		&nbsp;&nbsp;&nbsp;
+	</div>	
+    </div>
+	<div data-role="content" style="background-color:#AAAAAA;">
+	<h3 class="c">입력한 명대사 조회</h3>
+			<div class="ui-body">
+				<fieldset class="ui-grid-b">
+					<div class="ui-block-a">
+						<select name="movieType3" id="movieType3" data-native-menu="false" data-mini="true" data-inline="true">
+							<option>장르</option>
+							<option value="%">전체</option>
+							<option value="로멘스/멜로">로멘스/멜로</option>
+							<option value="드라마">드라마</option>
+							<option value="액션">액션</option>
+							<option value="코미디">코미디</option>
+							<option value="다큐멘터리">다큐멘터리</option>
+							<option value="기타">기타</option>
+							
+						</select>
+					</div>
+					<div class="ui-block-b">
+						<select name="movieRegion3" id="movieRegion3" data-native-menu="false" data-mini="true" data-inline="true">
+							<option>지역</option>				
+							<option value="%">전체</option>
+							<option value="한국">한국</option>
+							<option value="미국">미국</option>
+							<option value="일본">일본</option>
+							<option value="중국">중국</option>
+							<option value="영국">영국</option>
+							<option value="유럽">유럽</option>
+							<option value="기타">기타</option>
+						</select>
+					</div>								
+					<div class="ui-block-c" style="vertical-aligh:top">
+					    <input type="button" id="btnMovieListSearch" value="목록검색" data-mini="true" data-inline="true"/> 
+					</div>
+				</fieldset>
+			</div>			  
+		<ul data-role="listview" id="movieListArea" data-divider-theme="b" data-inset="true">
+		       <!-- 명대사 리스트 표시 영역 -->
+		</ul>       
+	</div>											
+    <div data-role="footer" data-position="fixed">
+			<div data-role="navbar">
+			<ul>
+			<li><a href="#movieEnrolPage"  style="background-color:#C0C0C0;">명대사 등록</a></li>
+			<li><a href="#movieModifyPage"  style="background-color:#C0C0C0;">명대사 수정</a></li>
+			<li><a href="#movieSearchPage"  style="background-color:#C0C0C0;">명대사 조회</a></li>
+			</ul>
+		</div>
+    </div>
+</div>	
+
+
+
+
+
+<div data-role="page" id="movieInfoShowPage">
+		<div data-role="header" class="header" style="width:100%">
+	<div>
+	<span class="a" align="center">
+	<a href="#main" style="margin-left:15px;color:black;">Fun Movie</a>
+	</span>
+		<a href="#panel2"><img src="img/list.png" align="right" width="30" height="30" class="b"></a>
+		<img src="img/search.png" align="right" width="30" height="30" class="b">
+		&nbsp;&nbsp;&nbsp;
+	</div>	
+    </div>
+	<div data-role="content">	
+		<div id="btnGroup">
+			<span id="btnPicShow"><button data-role="none">사진보기</button></span>		
+			<span id="btnRouteShow"><button data-role="none">찾아가기</button></span>
+		</div>     
+		<div class="ui-body ui-body-a"><br/>	
+			<div id="movieInfoArea">		
+				카페 정보 표시 영역
+			</div>				
+		</div>
+	</div>							
+    <div data-role="footer" data-position="fixed">
+			<div data-role="navbar">
+			<ul>
+			<li><a href="#movieEnrolPage"  style="background-color:#C0C0C0;">명대사 등록</a></li>
+			<li><a href="#movieModifyPage"  style="background-color:#C0C0C0;">명대사 수정</a></li>
+			<li><a href="#movieSearchPage"  style="background-color:#C0C0C0;">명대사 조회</a></li>
+			</ul>
+		</div>
+    </div>
+</div>	
+
+		<div data-role="header" class="header" style="width:100%">
+	<div>
+	<span class="a" align="center">
+	<a href="#main" style="margin-left:15px;color:black;">Fun Movie</a>
+	</span>
+		<a href="#panel2"><img src="img/list.png" align="right" width="30" height="30" class="b"></a>
+		<img src="img/search.png" align="right" width="30" height="30" class="b">
+		&nbsp;&nbsp;&nbsp;
+	</div>	
+    </div>
+
+<div data-role="dialog" id="routeShowDialog" data-theme="b">
+	<div data-role="header"  data-theme="b">
+		<h1>명대사 경로</h1>
+	</div>
+	<div data-role="content"  data-theme="b">
+		<div id="routeName" class="ui-bar ui-bar-a"></div><br/>   
+		<div id="routeArea"></div>	
+	</div>
+</div>
+
+
+
+
+
+
+
+</body>
+</html>
