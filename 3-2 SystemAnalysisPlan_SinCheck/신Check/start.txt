@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title> 라즈베리파이로 종합병원 만들기</title>
+ </head>
+ <body>
+  <h3>내 손 안에 있는 종합병원</h3>
+  <img src="./병원.jpg" width="300">
+ </body>
+</html>
+[출처] 파이썬과 Flask를 이용한 나만의 웹앱 만들기(2) : 템플릿을 이용한 HTML파일 만들기|작성자 코스모스
