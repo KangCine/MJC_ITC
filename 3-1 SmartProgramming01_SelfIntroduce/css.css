@@ -1,0 +1,106 @@
+		.a {background : #4CAF90;}
+		.b {background : #4CAF60;}
+		span { font-size:200%;}
+body {Text-align:center;font-family:굴림체; font-size:5%;}
+
+
+	*	{border-radius: 20px;}
+
+table
+{
+    border-collapse: collapse;
+    width: 85%;
+
+}
+th
+{
+    height: 50%;    text-align: center;    vertical-align: bottom;
+}
+
+
+
+
+table, td, th
+{
+    border: 1% solid #ddd;
+}
+th, td
+{
+    padding: 1%;
+}
+
+tr:nth-child(even)
+{
+    background-color: #f2f2f2;
+}
+tr:nth-child(even+2)
+{
+    background-color: #f1f1f1;
+}
+
+tr:hover
+{
+    background-color: #BDBDBD;
+}
+
+
+
+
+table{  
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+
+
+	  
+.title > h1 span i {
+    animation-name: letter00;
+    animation-iteration-count: infinite;
+    animation-duration: 10s;
+}
+@keyframes letter00 {
+    0% {
+        color: white;
+        text-shadow: 0 0 4px #000000;
+    }
+    5%{
+        color:black;
+    }
+}
+.title > h1 span:nth-child(1){
+    animation-name: letter01;
+    animation-iteration-count: infinite;
+    animation-duration: 10s;
+}
+
+@keyframes letter01 {
+    5% {
+        color: white;
+        text-shadow: 0 0 4px #000000;
+    }
+    10%{
+        color:#4CAF50;
+    }
+}
+
+
+
+
+
+a:link {
+		color:green;
+		text-decoration:none;
+}
+a:visited{
+		color:red;
+}
+
+a:hover{
+		color:black;
+		text-decoration:underline;
+}
+
+a:active{
+		color:yellow;
+}
